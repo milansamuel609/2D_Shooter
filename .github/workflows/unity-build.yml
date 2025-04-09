@@ -2,28 +2,20 @@ name: Unity Game Automatic Build - Multi OS
 
 on:
   push:
-    branches:
-      - main
+    branches: [main]
   pull_request:
-    branches:
-      - main
+    branches: [main]
 
 jobs:
   build:
-    name: Build on ${{ matrix.os }}
-    runs-on: ${{ matrix.os }}
-
-    strategy:
-      matrix:
-        os: [ubuntu-latest, windows-latest]
+    runs-on: ubuntu-latest
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: Echo GitHub Token
-        run: echo "${{ secrets.GITHUB_TOKEN }}"
-
+      - name: Docker Login
+        run: echo "${{ secrets.DOCKER_TOKEN }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
 
       - name: Run Unity Tests
         uses: game-ci/unity-test-runner@v4
@@ -33,21 +25,20 @@ jobs:
           projectPath: .
           testMode: editmode
           githubToken: ${{ secrets.GITHUB_TOKEN }}
-          containerRegistryRepository: myunity/webgl-runner
-
+          customImage: milansamuel/unity-builder:2022.3.5f1-webgl
+          
       - name: Build WebGL
         uses: game-ci/unity-builder@v4
         env:
           UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
         with:
-          customImage: unityci/editor:2022.3.4f1-base-0
+          customImage: milansamuel/unity-builder:2022.3.5f1-webgl
           targetPlatform: WebGL
           projectPath: .
-          buildsPath: build/${{ matrix.os }}
-          containerRegistryRepository: myunity/webgl-runner
+          buildsPath: build/webgl
 
       - name: Upload WebGL Build
         uses: actions/upload-artifact@v4
         with:
-          name: WebGL-Build-${{ matrix.os }}
-          path: build/${{ matrix.os }}
+          name: WebGL-Build
+          path: build/webgl

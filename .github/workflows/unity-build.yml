@@ -37,8 +37,10 @@ jobs:
           rm -rf ~/.local/share/unity3d
 
       - name: Clean docker cache
-        run: docker system prune -f
-          
+        run: |
+          docker system prune -af --volumes
+          docker builder prune -af
+
       - name: Build WebGL
         uses: game-ci/unity-builder@v4
         env:
@@ -48,7 +50,7 @@ jobs:
         with:
           targetPlatform: WebGL
           projectPath: .
-          versioning: None 
+          versioning: None
 
       - name: Upload WebGL Build
         uses: actions/upload-artifact@v4

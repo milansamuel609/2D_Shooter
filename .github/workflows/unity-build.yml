@@ -20,11 +20,13 @@ jobs:
           username: ${{ vars.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
           
-      - uses: actions/cache@v3
+      - name: Cache Unity Library
+        uses: actions/cache@v3
         with:
-          path: .
-          key: Library-2D_Shooter-TargetPlatform
+          path: Library
+          key: Library-2D_Shooter-${{ runner.os }}-${{ hashFiles('ProjectSettings/ProjectVersion.txt') }}
           restore-keys: |
+            Library-2D_Shooter-${{ runner.os }}-
             Library-2D_Shooter-
             Library-
 
@@ -48,6 +50,7 @@ jobs:
         with:
           targetPlatform: WebGL
           projectPath: .
+          versioning: None 
 
       - name: Upload WebGL Build
         uses: actions/upload-artifact@v4

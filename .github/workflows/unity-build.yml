@@ -21,10 +21,10 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: Setup Unity
-        uses: game-ci/unity-actions/setup@v4
-        with:
-          unityVersion: 2022.3.5f1
+      # - name: Setup Unity
+      #   uses: game-ci/unity-actions/setup@v4
+      #   with:
+      #     unityVersion: 2022.3.5f1
 
       - name: Run Unity Tests
         uses: game-ci/unity-test-runner@v4

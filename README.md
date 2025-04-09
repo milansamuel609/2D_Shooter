@@ -63,4 +63,4 @@ In this game, here’s how a typical DevOps pipeline (using GitHub Actions, Dock
 
 **The Game Is Sooner Going Live On [itch.io](https://itch.io/). Stay Tuned !!**
 
-**Developed By: Milan P Samuel**
+**Developed By : Milan P Samuel**

@@ -33,7 +33,7 @@ jobs:
           projectPath: .
           testMode: editmode
           githubToken: ${{ secrets.GITHUB_TOKEN }}
-          containerRegistryRepository: unityci/test-runner
+          containerRegistryRepository: myunity/webgl-runner
 
       - name: Build WebGL
         uses: game-ci/unity-builder@v4
@@ -44,8 +44,7 @@ jobs:
           targetPlatform: WebGL
           projectPath: .
           buildsPath: build/${{ matrix.os }}
-          containerRegistryRepository: unityci/webgl-builds
-
+          containerRegistryRepository: myunity/webgl-runner
 
       - name: Upload WebGL Build
         uses: actions/upload-artifact@v4

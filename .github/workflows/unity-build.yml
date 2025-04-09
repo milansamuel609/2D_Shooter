@@ -32,7 +32,7 @@ jobs:
       - name: Run Unity Tests
         uses: game-ci/unity-test-runner@v4
         with:
-          projectPath: 2D_Shooter
+          projectPath: .
           testMode: editmode
 
       - name: Build WebGL

@@ -19,16 +19,6 @@ jobs:
         with:
           username: ${{ vars.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
-          
-      - name: Cache Unity Library
-        uses: actions/cache@v3
-        with:
-          path: Library
-          key: Library-2D_Shooter-${{ runner.os }}-${{ hashFiles('ProjectSettings/ProjectVersion.txt') }}
-          restore-keys: |
-            Library-2D_Shooter-${{ runner.os }}-
-            Library-2D_Shooter-
-            Library-
 
       - name: Run Unity Tests
         uses: game-ci/unity-test-runner@v4
@@ -40,6 +30,14 @@ jobs:
           projectPath: .
           testMode: editmode
           githubToken: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Clean Unity Cache
+        run: |
+          rm -rf ~/.cache/unity
+          rm -rf ~/.local/share/unity3d
+
+      - name: Clean docker cache
+        run: docker system prune -f
           
       - name: Build WebGL
         uses: game-ci/unity-builder@v4

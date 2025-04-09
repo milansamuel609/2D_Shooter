@@ -1,0 +1,46 @@
+name: Unity Game Automatic Build - Multi OS
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build:
+    name: Build on ${{ matrix.os }}
+    runs-on: ${{matrix.os}}
+
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Setup Unity
+        uses: game-ci/unity-actions/setup@v2
+        with:
+          unityVersion: 2022.3.5f1
+
+      - name: Run Unity Tests
+        uses: game-ci/unity-actions/test@v2
+        with:
+          projectPath: 2D_Shooter
+          testMode: editmode
+
+      - name: Build WebGL
+        uses: game-ci/unity-actions/build@v2
+        with:
+          targetPlatform: WebGL
+          projectPath: 2D_Shooter
+          buildsPath: build/${{ matrix.os }}
+
+      - name: Upload WebGL Build
+        uses: actions/upload-artifact@v3
+        with:
+          name: WebGL-Build-${{ matrix.os }}
+          path: build/${{ matrix.os }}

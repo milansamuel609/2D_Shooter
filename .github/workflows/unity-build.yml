@@ -32,9 +32,10 @@ jobs:
           UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
           UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
         with:
-          projectPath: .                      
+          projectPath: .
+          testMode: editMode
           githubToken: ${{ secrets.GITHUB_TOKEN }}
-          testMode: editmode
+          buildName: unity-webgl-ci
 
 
       - name: Build WebGL
@@ -44,10 +45,10 @@ jobs:
           UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
           UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
         with:
+          customImage: unityci/editor:2022.3.4f1-base-0
           targetPlatform: WebGL
           projectPath: .
           buildsPath: build/${{ matrix.os }}
-          customImage: unityci/editor:2022.3.5f1-base-0
           buildName: webgl-ci-build
 
       - name: Upload WebGL Build

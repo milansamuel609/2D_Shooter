@@ -13,10 +13,6 @@ jobs:
     name: Build on ${{ matrix.os }}
     runs-on: ${{matrix.os}}
 
-    env:
-      UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
-
-
     strategy:
       matrix:
         os: [ubuntu-latest, windows-latest, macos-latest]
@@ -25,20 +21,29 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      # - name: Setup Unity
-      #   uses: game-ci/unity-actions/setup@v4
-      #   with:
-      #     unityVersion: 2022.3.5f1
+      - name: Cache Unity Library
+        uses: actions/cache@v3
+        with:
+          path: Library
+          key: Library-${{ runner.os }}-${{ hashFiles('ProjectSettings/ProjectVersion.txt') }}
+          restore-keys: |
+            Library-${{ runner.os }}-
+            Library-
 
       - name: Run Unity Tests
         uses: game-ci/unity-test-runner@v4
+        env:
+          UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
         with:
           projectPath: .
           testMode: editmode
 
       - name: Build WebGL
         uses: game-ci/unity-builder@v4
+        env:
+          UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
         with:
+          customImage: unityci/editor:2022.3.5f1-base-0
           targetPlatform: WebGL
           projectPath: 2D_Shooter
           buildsPath: build/${{ matrix.os }}

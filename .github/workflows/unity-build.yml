@@ -35,7 +35,7 @@ jobs:
           projectPath: .
           testMode: editMode
           githubToken: ${{ secrets.GITHUB_TOKEN }}
-          buildName: unity-webgl-ci
+          containerRegistryRepository: unityci/webgl-tests
 
 
       - name: Build WebGL
@@ -49,7 +49,7 @@ jobs:
           targetPlatform: WebGL
           projectPath: .
           buildsPath: build/${{ matrix.os }}
-          buildName: webgl-ci-build
+          containerRegistryRepository: unityci/webgl-tests
 
       - name: Upload WebGL Build
         uses: actions/upload-artifact@v4

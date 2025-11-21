@@ -1,45 +1,20 @@
 name: Unity Game Automatic Build - Multi OS
-
 on:
   push:
     branches: [main]
   pull_request:
     branches: [main]
-
 jobs:
   build:
     runs-on: ubuntu-latest
-    timeout-minutes: 60
-    
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-          lfs: true
-      
-      - name: Cache Unity Library
-        uses: actions/cache@v4
-        with:
-          path: Library
-          key: Library-${{ hashFiles('Assets/**', 'Packages/**', 'ProjectSettings/**') }}
-          restore-keys: |
-            Library-
-      
-      - name: Free Disk Space
-        run: |
-          sudo rm -rf /usr/share/dotnet
-          sudo rm -rf /opt/ghc
-          sudo rm -rf "/usr/local/share/boost"
-          sudo rm -rf "$AGENT_TOOLSDIRECTORY"
-          df -h
-      
       - name: Login to Docker Hub
         uses: docker/login-action@v3
         with:
           username: ${{ vars.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
-      
       - name: Run Unity Tests
         uses: game-ci/unity-test-runner@v4
         env:
@@ -50,13 +25,16 @@ jobs:
           projectPath: .
           testMode: EditMode
           githubToken: ${{ secrets.GITHUB_TOKEN }}
-          checkName: Unity Test Results
-          coverageOptions: 'generateAdditionalMetrics'
-        continue-on-error: false
-      
+      - name: Clean Unity Cache
+        run: |
+          rm -rf ~/.cache/unity
+          rm -rf ~/.local/share/unity3d
+      - name: Clean docker cache
+        run: |
+          docker system prune -af --volumes
+          docker builder prune -af
       - name: Build WebGL
         uses: game-ci/unity-builder@v4
-        timeout-minutes: 45
         env:
           UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
           UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
@@ -65,22 +43,8 @@ jobs:
           targetPlatform: WebGL
           projectPath: .
           versioning: None
-          buildsPath: build
-          buildName: WebGL
-      
       - name: Upload WebGL Build
         uses: actions/upload-artifact@v4
-        if: success()
         with:
           name: WebGL-Build
           path: build/WebGL
-          retention-days: 14
-          compression-level: 6
-      
-      - name: Clean Up After Build
-        if: always()
-        run: |
-          sudo rm -rf Library/ShaderCache
-          sudo rm -rf Library/PackageCache
-          docker system prune -af --volumes || true
-          df -h

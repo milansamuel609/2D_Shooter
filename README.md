@@ -35,7 +35,6 @@ In this game, here’s how a typical DevOps pipeline (using GitHub Actions, Dock
 
 - Once the game passes all tests, the CI pipeline automatically triggers the CD pipeline. This means:
 - The game is built for specific platforms, such as WebGL, Windows, Mac, or Android, depending on your configuration.
-- The built game (or the latest WebGL version) is uploaded to an artifact server or directly to a cloud platform (e.g., AWS S3, Azure Blob Storage).
 - The game is ready to be served to end-users.
 
 **e. Real-Time Updates**

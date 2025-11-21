@@ -8,23 +8,39 @@ on:
 
 jobs:
   build:
-    # Use the Unity version from your project (e.g., unity-2022.3.6f1)
-    runs-on: ubuntu-latest 
-
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    
     steps:
       - name: Checkout code
-        # Updated to v4 for better security and performance
         uses: actions/checkout@v4
-
+        with:
+          fetch-depth: 0
+          lfs: true
+      
+      - name: Cache Unity Library
+        uses: actions/cache@v4
+        with:
+          path: Library
+          key: Library-${{ hashFiles('Assets/**', 'Packages/**', 'ProjectSettings/**') }}
+          restore-keys: |
+            Library-
+      
+      - name: Free Disk Space
+        run: |
+          sudo rm -rf /usr/share/dotnet
+          sudo rm -rf /opt/ghc
+          sudo rm -rf "/usr/local/share/boost"
+          sudo rm -rf "$AGENT_TOOLSDIRECTORY"
+          df -h
+      
       - name: Login to Docker Hub
-        # v3 is the current stable version
         uses: docker/login-action@v3
         with:
           username: ${{ vars.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
-
+      
       - name: Run Unity Tests
-        # v4 is the current stable version
         uses: game-ci/unity-test-runner@v4
         env:
           UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
@@ -32,25 +48,15 @@ jobs:
           UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
         with:
           projectPath: .
-          testMode: editmode
+          testMode: EditMode
           githubToken: ${{ secrets.GITHUB_TOKEN }}
-
-      # Note: Caching steps are not included here as game-ci actions handle them internally,
-      # but the custom cleanup steps below are kept as they don't harm the process.
-
-      - name: Clean Unity Cache
-        run: |
-          rm -rf ~/.cache/unity
-          rm -rf ~/.local/share/unity3d
-
-      - name: Clean docker cache
-        run: |
-          docker system prune -af --volumes
-          docker builder prune -af
-
+          checkName: Unity Test Results
+          coverageOptions: 'generateAdditionalMetrics'
+        continue-on-error: false
+      
       - name: Build WebGL
-        # v4 is the current stable version
         uses: game-ci/unity-builder@v4
+        timeout-minutes: 45
         env:
           UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
           UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
@@ -59,10 +65,22 @@ jobs:
           targetPlatform: WebGL
           projectPath: .
           versioning: None
-
+          buildsPath: build
+          buildName: WebGL
+      
       - name: Upload WebGL Build
-        # v4 is the current stable version
         uses: actions/upload-artifact@v4
+        if: success()
         with:
           name: WebGL-Build
-          path: build/webgl
+          path: build/WebGL
+          retention-days: 14
+          compression-level: 6
+      
+      - name: Clean Up After Build
+        if: always()
+        run: |
+          sudo rm -rf Library/ShaderCache
+          sudo rm -rf Library/PackageCache
+          docker system prune -af --volumes || true
+          df -h
